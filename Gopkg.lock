@@ -13,6 +13,12 @@
   version = "v1.1.0"
 
 [[projects]]
+  name = "github.com/go-sql-driver/mysql"
+  packages = ["."]
+  revision = "a0583e0143b1624142adab07e0e97fe106d99561"
+  version = "v1.3"
+
+[[projects]]
   name = "github.com/mattn/go-sqlite3"
   packages = ["."]
   revision = "6c771bb9887719704b210e87e934f08be014bdb1"
@@ -75,6 +81,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "181181306e458ac82fbe89f3be2c65a37f9260f3b7e40c1dcaae95371df34134"
+  inputs-digest = "bf58ae47115a8ceabc36b708dbbedac9e66d6e2a513ecf8174c9411434056209"
   solver-name = "gps-cdcl"
   solver-version = 1
