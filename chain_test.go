@@ -41,8 +41,9 @@ func (s *ChainTestSuite) TestFetchThrowErrorWhenExpired() {
 
 	result, err := s.cache.Fetch(key)
 
-	s.Assert().Regexp("^Key not found in cache chain", err)
+	//	s.Assert().Regexp("^Key not found in cache chain", err)
 	s.Assert().Empty(result)
+	s.Assert().Contains(err.Error(), ErrChainKeyNotFound.Error())
 }
 
 func (s *ChainTestSuite) TestFetch() {

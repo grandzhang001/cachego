@@ -8,8 +8,6 @@ import (
 	"os"
 	"path/filepath"
 	"time"
-
-	errors "github.com/pkg/errors"
 )
 
 type (
@@ -23,6 +21,13 @@ type (
 		Duration int64  `json:"duration"`
 		Data     string `json:"data,omitempty"`
 	}
+)
+
+const (
+	ErrFileOpen = err("unable to open")
+
+	// ErrBoltDecodeJSON returns json decoding error message
+	ErrFileDecodeJSON = err("unable to decode json data")
 )
 
 // NewFile creates an instance of File cache
@@ -48,7 +53,7 @@ func (f *File) read(key string) (*FileContent, error) {
 	)
 
 	if err != nil {
-		return nil, errors.Wrap(err, "Unable to open")
+		return nil, ErrFileOpen
 	}
 
 	content := &FileContent{}
@@ -56,7 +61,7 @@ func (f *File) read(key string) (*FileContent, error) {
 	err = json.Unmarshal(value, content)
 
 	if err != nil {
-		return nil, errors.Wrap(err, "Unable to decode json data")
+		return nil, ErrFileDecodeJSON
 	}
 
 	if content.Duration == 0 {
@@ -65,7 +70,7 @@ func (f *File) read(key string) (*FileContent, error) {
 
 	if content.Duration <= time.Now().Unix() {
 		_ = f.Delete(key)
-		return nil, errors.New("Cache expired")
+		return nil, ErrCacheExpired
 	}
 
 	return content, nil
@@ -96,7 +101,7 @@ func (f *File) Delete(key string) error {
 	)
 
 	if err != nil {
-		return errors.Wrap(err, "Unable to delete")
+		return ErrDelete
 	}
 
 	return nil
@@ -131,7 +136,7 @@ func (f *File) Flush() error {
 	dir, err := os.Open(f.dir)
 
 	if err != nil {
-		return errors.Wrap(err, "Unable to open file")
+		return ErrFileOpen
 	}
 
 	defer dir.Close()
@@ -162,11 +167,11 @@ func (f *File) Save(key string, value string, lifeTime time.Duration) error {
 	data, err := json.Marshal(content)
 
 	if err != nil {
-		return errors.Wrap(err, "Unable to encode json data")
+		return ErrFileDecodeJSON
 	}
 
 	if err := ioutil.WriteFile(f.createName(key), data, 0666); err != nil {
-		return errors.Wrap(err, "Unable to save")
+		return ErrSave
 	}
 
 	return nil

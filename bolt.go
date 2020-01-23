@@ -5,26 +5,16 @@ import (
 	"time"
 
 	bolt "github.com/coreos/bbolt"
-	errors "github.com/pkg/errors"
 )
 
-var (
-	boltBucket = []byte("cachego")
+var boltBucket = []byte("cachego")
 
+const (
 	// ErrBoltBucketNotFound returns an error when bucket not found
-	ErrBoltBucketNotFound = errors.New("Bucket not found")
-
-	// ErrBoltCacheExpired returns an error when the cache key was expired
-	ErrBoltCacheExpired = errors.New("Cache expired")
+	ErrBoltBucketNotFound = err("Bucket not found")
 
 	// ErrBoltDecodeJSON returns json decoding error message
-	ErrBoltDecodeJSON = "Unable to decode json data"
-
-	// ErrBoltFlush returns flush error message
-	ErrBoltFlush = "Unable to flush"
-
-	// ErrBoltSave returns save error message
-	ErrBoltSave = "Unable to save"
+	ErrBoltDecodeJSON = err("Unable to decode json data")
 )
 
 type (
@@ -69,7 +59,7 @@ func (b *Bolt) read(key string) (*BoltContent, error) {
 	err = json.Unmarshal(value, content)
 
 	if err != nil {
-		return nil, errors.Wrap(err, ErrBoltDecodeJSON)
+		return nil, wrap(err, ErrBoltDecodeJSON)
 	}
 
 	if content.Duration == 0 {
@@ -78,7 +68,7 @@ func (b *Bolt) read(key string) (*BoltContent, error) {
 
 	if content.Duration <= time.Now().Unix() {
 		_ = b.Delete(key)
-		return nil, ErrBoltCacheExpired
+		return nil, ErrCacheExpired
 	}
 
 	return content, err
@@ -138,7 +128,7 @@ func (b *Bolt) Flush() error {
 		err := tx.DeleteBucket(boltBucket)
 
 		if err != nil {
-			return errors.Wrap(err, ErrBoltFlush)
+			return wrap(err, ErrFlush)
 		}
 
 		return err
@@ -163,7 +153,7 @@ func (b *Bolt) Save(key string, value string, lifeTime time.Duration) error {
 	data, err := json.Marshal(content)
 
 	if err != nil {
-		return errors.Wrap(err, ErrBoltDecodeJSON)
+		return wrap(err, ErrBoltDecodeJSON)
 	}
 
 	err = b.db.Update(func(tx *bolt.Tx) error {
@@ -177,7 +167,7 @@ func (b *Bolt) Save(key string, value string, lifeTime time.Duration) error {
 	})
 
 	if err != nil {
-		return errors.Wrap(err, ErrBoltSave)
+		return wrap(err, ErrSave)
 	}
 
 	return nil

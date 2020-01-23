@@ -13,6 +13,8 @@ type (
 	}
 )
 
+const ErrChainKeyNotFound = err("key not found")
+
 // NewChain creates an instance of Chain cache driver
 func NewChain(drivers ...Cache) *Chain {
 	return &Chain{drivers}
@@ -42,7 +44,6 @@ func (c *Chain) Delete(key string) error {
 
 // Fetch retrieves the value of one of the registred cache storages
 func (c *Chain) Fetch(key string) (string, error) {
-
 	errs := []string{}
 
 	for _, driver := range c.drivers {
@@ -55,7 +56,7 @@ func (c *Chain) Fetch(key string) (string, error) {
 		errs = append(errs, err.Error())
 	}
 
-	return "", fmt.Errorf("Key not found in cache chain. Errors: %s", strings.Join(errs, ","))
+	return "", wrap(fmt.Errorf("%s", strings.Join(errs, ",")), ErrChainKeyNotFound)
 }
 
 // FetchMulti retrieves multiple cached values from one of the registred cache storages
